@@ -9,7 +9,6 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      # Variables dummy para que la app no falle si usa process.env
       DB_HOST: localhost
       DB_PORT: 5432
       DB_NAME: cursos_db
