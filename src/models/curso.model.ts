@@ -1,8 +1,8 @@
 import { pool } from "../config/database";
-import { Curso, CreateCursoDTO, UpdateCursoDTO, CursoConSecciones } from '../types/curso.types';
+import { Curso, CreateCursoDTO, UpdateCursoDTO, Clase } from '../types/curso.types';
 
 export class CursoModel {
-  
+
   async findAll(): Promise<Curso[]> {
     const query = 'SELECT * FROM cursos ORDER BY codigo';
     const result = await pool.query(query);
@@ -33,41 +33,29 @@ export class CursoModel {
     return result.rows;
   }
 
-  async findWithSecciones(cursoId: number, periodo?: string): Promise<CursoConSecciones | null> {
+  async findWithClases(cursoId: number): Promise<Curso | null> {
     const cursoQuery = 'SELECT * FROM cursos WHERE id = $1';
     const cursoResult = await pool.query(cursoQuery, [cursoId]);
-    
-    if (cursoResult.rows.length === 0) {
-      return null;
-    }
 
+    if (cursoResult.rows.length === 0) return null;
     const curso = cursoResult.rows[0];
-    
-    let seccionesQuery = 'SELECT * FROM secciones WHERE curso_id = $1';
-    const params: any[] = [cursoId];
-    
-    if (periodo) {
-      seccionesQuery += ' AND periodo = $2';
-      params.push(periodo);
-    }
-    
-    seccionesQuery += ' ORDER BY codigo_seccion';
-    
-    const seccionesResult = await pool.query(seccionesQuery, params);
-    
+
+    const clasesQuery = 'SELECT * FROM clases WHERE curso_id = $1 ORDER BY id_clases';
+    const clasesResult = await pool.query(clasesQuery, [cursoId]);
+
     return {
       ...curso,
-      secciones: seccionesResult.rows
+      clases: clasesResult.rows
     };
   }
 
   async create(cursoData: CreateCursoDTO): Promise<Curso> {
     const query = `
-      INSERT INTO cursos (codigo, nombre, descripcion, creditos, horas_semanales, nivel, area, prerequisitos, capacidad_maxima)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO cursos 
+        (codigo, nombre, descripcion, creditos, horas_semanales, nivel, area, prerequisitos, capacidad_maxima)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
       RETURNING *
     `;
-    
     const values = [
       cursoData.codigo,
       cursoData.nombre,
@@ -97,22 +85,18 @@ export class CursoModel {
       }
     });
 
-    if (fields.length === 0) {
-      return this.findById(id);
-    }
+    if (fields.length === 0) return this.findById(id);
 
     values.push(id);
     const query = `
-      UPDATE cursos 
+      UPDATE cursos
       SET ${fields.join(', ')}
       WHERE id = $${paramCount}
       RETURNING *
     `;
-
     const result = await pool.query(query, values);
     return result.rows[0] || null;
   }
-
   async delete(id: number): Promise<boolean> {
     const query = 'DELETE FROM cursos WHERE id = $1';
     const result = await pool.query(query, [id]);
@@ -122,11 +106,7 @@ export class CursoModel {
   async search(searchTerm: string): Promise<Curso[]> {
     const query = `
       SELECT * FROM cursos 
-      WHERE 
-        codigo ILIKE $1 OR 
-        nombre ILIKE $1 OR 
-        descripcion ILIKE $1 OR
-        area ILIKE $1
+      WHERE codigo ILIKE $1 OR nombre ILIKE $1 OR descripcion ILIKE $1 OR area ILIKE $1
       ORDER BY codigo
     `;
     const result = await pool.query(query, [`%${searchTerm}%`]);
@@ -143,6 +123,55 @@ export class CursoModel {
     `;
     const result = await pool.query(query);
     return result.rows;
+  }
+
+
+  async createClase(clase: Clase): Promise<Clase> {
+    const query = `
+      INSERT INTO clases (titulo, descripcion, duracion, curso_id)
+      VALUES ($1,$2,$3,$4)
+      RETURNING *
+    `;
+    const values = [
+      clase.titulo,
+      clase.descripcion || null,
+      clase.duracion,
+      clase.curso_id
+    ];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  }
+
+  async updateClase(id: number, claseData: Partial<Clase>): Promise<Clase | null> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let paramCount = 1;
+
+    Object.entries(claseData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        fields.push(`${key} = $${paramCount}`);
+        values.push(value);
+        paramCount++;
+      }
+    });
+
+    if (fields.length === 0) return null;
+
+    values.push(id);
+    const query = `
+      UPDATE clases
+      SET ${fields.join(', ')}
+      WHERE id_clases = $${paramCount}
+      RETURNING *
+    `;
+    const result = await pool.query(query, values);
+    return result.rows[0] || null;
+  }
+
+  async deleteClase(id: number): Promise<boolean> {
+    const query = 'DELETE FROM clases WHERE id_clases = $1';
+    const result = await pool.query(query, [id]);
+    return (result.rowCount ?? 0) > 0;
   }
 }
 

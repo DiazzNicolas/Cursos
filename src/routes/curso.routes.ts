@@ -5,6 +5,12 @@ import { validateCurso, validateUpdateCurso } from '../middlewares/validators';
 const router = Router();
 
 /**
+ * ============================
+ * RUTAS DE CURSOS
+ * ============================
+ */
+
+/**
  * @route   GET /api/cursos
  * @desc    Obtener todos los cursos
  * @access  Public
@@ -33,6 +39,13 @@ router.get('/estadisticas/por-area', CursoController.getEstadisticasPorArea);
 router.get('/area/:area', CursoController.getCursosByArea);
 
 /**
+ * @route   GET /api/cursos/codigo/:codigo
+ * @desc    Obtener curso por código
+ * @access  Public
+ */
+router.get('/codigo/:codigo', CursoController.getCursoByCodigo);
+
+/**
  * @route   GET /api/cursos/:id
  * @desc    Obtener curso por ID
  * @access  Public
@@ -45,13 +58,6 @@ router.get('/:id', CursoController.getCursoById);
  * @access  Public
  */
 router.get('/:id/clases', CursoController.getCursoWithClases);
-
-/**
- * @route   GET /api/cursos/codigo/:codigo
- * @desc    Obtener curso por código
- * @access  Public
- */
-router.get('/codigo/:codigo', CursoController.getCursoByCodigo);
 
 /**
  * @route   POST /api/cursos
@@ -73,5 +79,26 @@ router.put('/:id', validateUpdateCurso, CursoController.updateCurso);
  * @access  Private
  */
 router.delete('/:id', CursoController.deleteCurso);
+
+/**
+ * @route   POST /api/cursos/:id/clases
+ * @desc    Crear nueva clase en un curso
+ * @access  Private
+ */
+router.post('/:id/clases', CursoController.createClase);
+
+/**
+ * @route   PUT /api/clases/:id
+ * @desc    Actualizar clase por ID
+ * @access  Private
+ */
+router.put('/clases/:id', CursoController.updateClase);
+
+/**
+ * @route   DELETE /api/clases/:id
+ * @desc    Eliminar clase por ID
+ * @access  Private
+ */
+router.delete('/clases/:id', CursoController.deleteClase);
 
 export default router;

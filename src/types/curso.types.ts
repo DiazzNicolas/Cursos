@@ -1,3 +1,15 @@
+// =====================
+// INTERFACES PRINCIPALES
+// =====================
+
+export interface Clase {
+  id_clases?: number;
+  titulo: string;
+  descripcion?: string;
+  duracion: number;
+  curso_id: number;
+}
+
 export interface Curso {
   id?: number;
   codigo: string;
@@ -12,25 +24,12 @@ export interface Curso {
   capacidad_maxima?: number;
   created_at?: Date;
   updated_at?: Date;
+  clases?: Clase[]; // Aquí vinculamos las clases al curso
 }
 
-export interface Seccion {
-  id?: number;
-  curso_id: number;
-  codigo_seccion: string;
-  periodo: string;
-  profesor_id?: number;
-  horario?: Record<string, string>;
-  aula?: string;
-  cupos_disponibles?: number;
-  estado?: 'ABIERTA' | 'CERRADA' | 'CANCELADA';
-  created_at?: Date;
-  updated_at?: Date;
-}
-
-export interface CursoConSecciones extends Curso {
-  secciones?: Seccion[];
-}
+// =====================
+// DTO PARA CREAR Y ACTUALIZAR CURSOS
+// =====================
 
 export interface CreateCursoDTO {
   codigo: string;
@@ -56,20 +55,20 @@ export interface UpdateCursoDTO {
   capacidad_maxima?: number;
 }
 
-export interface CreateSeccionDTO {
+// =====================
+// DTO PARA CREAR Y ACTUALIZAR CLASES
+// =====================
+
+export interface CreateClaseDTO {
+  titulo: string;
+  descripcion?: string;
+  duracion: number;
   curso_id: number;
-  codigo_seccion: string;
-  periodo: string;
-  profesor_id?: number;
-  horario?: Record<string, string>;
-  aula?: string;
-  cupos_disponibles?: number;
 }
 
-export interface UpdateSeccionDTO {
-  profesor_id?: number;
-  horario?: Record<string, string>;
-  aula?: string;
-  cupos_disponibles?: number;
-  estado?: 'ABIERTA' | 'CERRADA' | 'CANCELADA';
+export interface UpdateClaseDTO {
+  titulo?: string;
+  descripcion?: string;
+  duracion?: number;
+  curso_id?: number;
 }
